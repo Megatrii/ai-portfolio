@@ -38,9 +38,6 @@ con acceso a internet desde el celular.
 - La advertencia médica siempre visible
 - Funciona desde el celular
 
-```
 
-Guárdalo. Luego:
-```
 
 
