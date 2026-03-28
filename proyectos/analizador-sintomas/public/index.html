@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analizador de Síntomas con IA</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: #f0f4f8;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .contenedor {
+        background: white;
+        border-radius: 12px;
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        color: #1a365d;
+        font-size: 24px;
+        margin-bottom: 8px;
+      }
+
+      .subtitulo {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 24px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 120px;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: 15px;
+        resize: none;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      textarea:focus {
+        border-color: #3182ce;
+      }
+
+      button {
+        width: 100%;
+        padding: 14px;
+        background: #3182ce;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #2c5282;
+      }
+      button:disabled {
+        background: #a0aec0;
+        cursor: not-allowed;
+      }
+
+      .resultado {
+        margin-top: 24px;
+        padding: 20px;
+        background: #f7fafc;
+        border-radius: 8px;
+        border-left: 4px solid #3182ce;
+        display: none;
+      }
+
+      .resultado.urgente {
+        border-left-color: #e53e3e;
+        background: #fff5f5;
+      }
+      .resultado.pronto {
+        border-left-color: #dd6b20;
+        background: #fffaf0;
+      }
+      .resultado.esperar {
+        border-left-color: #38a169;
+        background: #f0fff4;
+      }
+
+      .resultado p {
+        color: #2d3748;
+        font-size: 15px;
+        line-height: 1.8;
+        white-space: pre-line;
+      }
+
+      .advertencia {
+        margin-top: 16px;
+        padding: 10px;
+        background: #fff3cd;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #856404;
+      }
+
+      .cargando {
+        text-align: center;
+        color: #666;
+        margin-top: 16px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="contenedor">
+      <h1>🏥 Analizador de Síntomas</h1>
+      <p class="subtitulo">
+        Describe tus síntomas y recibe orientación inicial con IA
+      </p>
+
+      <textarea
+        id="sintomas"
+        placeholder="Ejemplo: dolor de cabeza fuerte, fiebre de 38 grados, cansancio desde hace 2 días..."
+      ></textarea>
+
+      <button id="btn" onclick="analizar()">Analizar síntomas</button>
+
+      <div class="cargando" id="cargando">⏳ Analizando con IA...</div>
+
+      <div class="resultado" id="resultado">
+        <p id="texto-resultado"></p>
+      </div>
+
+      <div class="advertencia">
+        ⚠️ Esta herramienta es solo orientación inicial. No reemplaza la
+        consulta con un médico profesional.
+      </div>
+    </div>
+
+    <script>
+      async function analizar() {
+        const sintomas = document.getElementById("sintomas").value;
+        const btn = document.getElementById("btn");
+        const cargando = document.getElementById("cargando");
+        const resultado = document.getElementById("resultado");
+        const textoResultado = document.getElementById("texto-resultado");
+
+        // Validación en el frontend
+        if (!sintomas.trim()) {
+          alert("Por favor describe tus síntomas");
+          return;
+        }
+
+        // Muestra estado de carga
+        btn.disabled = true;
+        cargando.style.display = "block";
+        resultado.style.display = "none";
+
+        try {
+          // Envía los síntomas al servidor
+          const response = await fetch("/analizar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sintomas }),
+          });
+
+          const data = await response.json();
+
+          // Muestra el resultado
+          textoResultado.textContent = data.resultado;
+          resultado.style.display = "block";
+
+          // Cambia el color según urgencia
+          resultado.className = "resultado";
+          if (data.resultado.includes("URGENTE"))
+            resultado.classList.add("urgente");
+          else if (data.resultado.includes("PRONTO"))
+            resultado.classList.add("pronto");
+          else resultado.classList.add("esperar");
+        } catch (error) {
+          textoResultado.textContent = "Error al conectar con el servidor.";
+          resultado.style.display = "block";
+        }
+
+        // Restaura el botón
+        btn.disabled = false;
+        cargando.style.display = "none";
+      }
+    </script>
+  </body>
+</html>
