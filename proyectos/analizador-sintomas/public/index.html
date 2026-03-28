@@ -172,7 +172,7 @@
 
         try {
           // Envía los síntomas al servidor
-          const response = await fetch("/analizar", {
+          const response = await fetch("/api/analizar", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ sintomas }),
